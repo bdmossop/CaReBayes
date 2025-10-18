@@ -25,16 +25,16 @@ class RegimeAICSelector:
         tau_min: int = 1,
         pc_alpha: float = 0.2,
         alpha_level: float = 0.01,
-        n_jobs: int = -1,                 # will be overridden to 1 if deterministic=True
+        n_jobs: int = -1,                
         # common kwargs
         cond_ind_test = None,
         prediction_model = None,
-        verbosity: int = -2,              # our class-level verbosity (not Tigramite)
-        # NEW knobs
-        seed: int = 1234,                 # fixes RNG inside RPCMCI
+        verbosity: int = -2,             
+      
+        seed: int = 1234,                
        
-        silent: bool = True,              # mutes Tigramite’s own prints
-        verbose: bool = False             # controls *our* progress prints
+        silent: bool = True,             
+        verbose: bool = False             
     ):
         """
         data: array of shape (T, N)
@@ -42,22 +42,21 @@ class RegimeAICSelector:
         The rest parameterize RPCMCI.
         """
         # ---- data ----
-        self.data = data[:500]  # keep if you want a cap, or remove to use full
+        self.data = data[:500]  
         self.T, self.N = self.data.shape
         self.tau_max = tau_max
 
-        # ---- determinism (OS/env & seeds) ----
+    
         self.seed = seed
         
 
-        # ---- wrap in Tigramite DataFrame ----
         self.df = DataFrame(self.data)
 
-        # ---- silence controls ----
+        
         self.silent = silent
         self.verbose = verbose
 
-        # CI test (mute its internal messages)
+       
         self.ci_test = cond_ind_test if cond_ind_test is not None else ParCorr(
             verbosity=0 if self.silent else 1
         )
@@ -67,12 +66,11 @@ class RegimeAICSelector:
             dataframe        = self.df,
             cond_ind_test    = self.ci_test,
             prediction_model = prediction_model or None,
-            seed             = self.seed,                # <<< fixes RPCMCI annealing RNG
-            verbosity        = -1 if self.silent else 0  # <<< mutes Tigramite output
+            seed             = self.seed,                
+            verbosity        = -1 if self.silent else 0  
         )
 
-        # ---- RPCMCI run() kwargs (NOT constructor kwargs) ----
-        # NOTE: do not include 'dataframe', 'cond_ind_test', etc. here; those belong to the constructor.
+
         self.rpc_run_kwargs = dict(
             switch_thres   = switch_thres,
             num_iterations = num_iterations,
@@ -136,7 +134,7 @@ class RegimeAICSelector:
         Returns (aicc, N_para)
         """
      
-        # Construct RPCMCI once per evaluation to ensure clean state/seed
+        
         rpc = RPCMCI(**self.rpc_ctor_kwargs)
 
        
@@ -194,7 +192,7 @@ class RegimeAICSelector:
                     'n_params' : n_params
                 }
 
-                # stable compare + tie-break (prefer smaller NK, then NC)
+    
                 is_better = (aicc + aicc_tol) < best_score
                 is_tie    = abs(aicc - best_score) <= aicc_tol
                 if is_better or (is_tie and (best_params[0] is None or (NK, NC) < best_params)):

@@ -27,11 +27,11 @@ class RegimeAICSelector:
         tau_max: maximum lag
         The rest parameterize RPCMCI.
         """
-        self.data = data[:500]  # or full data if you prefer
+        self.data = data[:500]  
         self.T, self.N = self.data.shape
         self.tau_max = tau_max
 
-        # wrap in Tigramite DataFrame
+      
         self.df = DataFrame(self.data)
 
         # common
@@ -148,27 +148,27 @@ class RegimeAICSelector:
         best_score = np.inf
         best_params = (None, None)
 
-        # this will store every result
+      
         all_results = {}
 
         for NK in grid_NK:
             for NC in grid_NC:
                 aicc, n_params = self.evaluate(NK, NC)
 
-                # save into your dict
+               
                 all_results[(NK, NC)] = {
                     'aicc'     : aicc,
                     'n_params' : n_params
                 }
 
-                # update best
+              
                 if aicc < best_score:
                     best_score  = aicc
                     best_params = (NK, NC)
 
                 print(f"NK={NK}, NC={NC} → AICc={aicc:.2f}, params={n_params}")
 
-        # wrap up
+       
         return {
             'all_results': all_results,
             'best': {
